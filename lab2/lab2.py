@@ -2,23 +2,23 @@
 import wave
 import os
 import numpy as np
+import math
 
 # 压缩文件
 def compressWaveFile(wave_data) :       
-    quantized_num = 100                         # 量化因子
+    quantized_num = 200                         # 量化因子
     diff_value = []
     compressed_data = []
     decompressed_data = []
-
     diff_value = [wave_data[0]]
     compressed_data = [wave_data[0]]
     decompressed_data = [wave_data[0]]
     for index in range(len(wave_data)) :
         if index == 0 :
             continue
-        diff_value.append(wave_data[index] - compressed_data[index - 1])
+        diff_value.append(wave_data[index]  - decompressed_data[index - 1])
         compressed_data.append(calCompressedData(diff_value[index], quantized_num))
-        decompressed_data.append(compressed_data[index] * quantized_num)
+        decompressed_data.append(decompressed_data[index - 1] + compressed_data[index] * quantized_num)
     return compressed_data, decompressed_data
 
 # 计算 映射
