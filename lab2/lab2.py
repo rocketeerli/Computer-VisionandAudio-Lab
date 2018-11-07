@@ -6,28 +6,35 @@ import math
 
 # 压缩文件
 def compressWaveFile(wave_data) :       
-    quantized_num = 0.05                         # 量化因子
-    diff_value = []
-    compressed_data = []
-    decompressed_data = []
+    quantized_num = 0.0005                         # 量化因子
+    diff_value = []                   # 存储差值
+    compressed_data = []              # 存储压缩数据
+    decompressed_data = []            # 存储解压数据
+    # 初始化 将第一个采样点存起来 第一个采样点不进行加密
     diff_value = [wave_data[0]]
     compressed_data = [wave_data[0]]
     decompressed_data = [wave_data[0]]
+    # 找到绝对值最大的样本点
+    num_absMax = 0
+    for num in wave_data :
+        num_abs = abs(num)
+        if num_abs > num_absMax :
+            num_absMax = num_abs
+    num_absMax = np.int64(num_absMax)
+    # 将这个最大的数据存到压缩数组中  用于解压
+    compressed_data.append(num_absMax)
+    # 压缩每个数据
     for index in range(len(wave_data)) :
         if index == 0 :
-            continue
-        # 做差的时候要取对数，对数的 自变量 x >= 0， 由于样本点有正有负，因此这里先取绝对值加一
-        waveData_abs = abs(wave_data[index]) + 1
-        decompressedData_abs = abs(decompressed_data[index - 1]) + 1 
-        # 相当于对变换后的值，即取绝对值加一后的值进行加密
-        diff_value.append(math.log(waveData_abs) - math.log(decompressedData_abs))
+            continue 
+        # 由于取 log 值，对每个样本点，加上绝对值最大的点再加 1 ，使所有值都大于等于 1
+        waveData_tran = wave_data[index] + num_absMax + 1
+        decompressedData_tran = decompressed_data[index - 1] + num_absMax + 1 
+        # 相当于对变换后的值（即加上绝对值最大的点再加 1 后的值）进行加密
+        diff_value.append(math.log(waveData_tran) - math.log(decompressedData_tran))
         compressed_data.append(calCompressedData(diff_value[index], quantized_num))
         # 这里进行解密，并直接将解密出来的数值进行减一操作
-        de_num = math.exp(math.log(abs(decompressed_data[index - 1]) + 1) + compressed_data[index] * quantized_num) - 1
-        # 判断加密之前的样本点符号是正还是负， 如果是负数，那么解密出来的也应该是负数，需要乘-1
-        if wave_data[index] < 0 :
-            decompressed_data.append((-1) * de_num)
-            continue
+        de_num = math.exp(math.log(decompressedData_tran) + compressed_data[index] * quantized_num) - 1 - num_absMax
         decompressed_data.append(de_num)
     return compressed_data, decompressed_data
 
@@ -80,7 +87,7 @@ def decompressWaveFile(compressed_data) :
         decompressed_data.append(decompressed_data[i - 1] + compressed_data[i] - 8)
     return decompressed_data
 
-for i in range(1) :
+for i in range(10) :
     f = wave.open("./语料/" + str(i + 1) + ".wav","rb")
     # getparams() 一次性返回所有的WAV文件的格式信息
     params = f.getparams()
@@ -100,10 +107,10 @@ for i in range(1) :
         for num in compressed_data :
             f.write(np.int16(num))
     
-    # 读压缩文件 解压
-    with open("./压缩文件/" + str(i + 1) + ".dpc", "rb") as f :
-        compressed_data = readCompressedFile(f)
-        decompressed_data = decompressWaveFile(compressed_data)
+    # # 读压缩文件 解压
+    # with open("./压缩文件/" + str(i + 1) + ".dpc", "rb") as f :
+    #     compressed_data = readCompressedFile(f)
+    #     decompressed_data = decompressWaveFile(compressed_data)
 
     # 写还原文件
     with open("./还原文件/" + str(i + 1) + ".pcm", "wb") as f :
