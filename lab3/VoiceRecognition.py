@@ -13,9 +13,9 @@ channels = 1       # 声道数
 sampwidth = 2      # 采样字节 1 or 2
 
 # 实时录音的参数
-CHUNK = 1024       # 录音的块大小
-RATE = 16000       # 采样频率 8000 or 16000
-RECORD_SECONDS = 5 # 录音时长 单位 秒(s)
+CHUNK = 1024         # 录音的块大小
+RATE = 16000         # 采样频率 8000 or 16000
+RECORD_SECONDS = 2.5 # 录音时长 单位 秒(s)
 
 # 读取已经用 HTK 计算好的 MFCC 特征
 def getMFCC() :
@@ -133,6 +133,7 @@ MFCC_models = getMFCCModels(MFCC)
 MFCC_undetermined = getMFCCUndetermined(MFCC)
 
 # 开始匹配
+n = 0
 for i in range(len(MFCC_undetermined)) :
     flag = 0
     min_dis = dtw(MFCC_undetermined[i], MFCC_models[0])
@@ -141,8 +142,10 @@ for i in range(len(MFCC_undetermined)) :
         if dis < min_dis :
             min_dis = dis
             flag = j
+    if i + 1 <= (flag + 1) * 4 and i + 1 >= flag * 4 :
+        n = n + 1
     print(str(i + 1) + "\t" + str(flag + 1) + "\n")
-
+print("正确率为：" + str(n / 40))
 # 录音
 pa = pyaudio.PyAudio()
 stream = pa.open(format = pyaudio.paInt16, channels = 1, \
@@ -173,9 +176,12 @@ end_point_detect = EndPointDetect(wave_data)
 # 存储端点检测后的语音文件
 N = end_point_detect.wave_data_detected
 m = 0
+print(N)
 while m < len(N) :
     save_wave_file("./RecordedVoice-RealTime/recordedVoice_after.wav", wave_data[N[m] * 256 : N[m+1] * 256])
     m = m + 2
+
+# 利用 HCopy 工具对录取的语音进行 MFCC 特征提取
 os.chdir("C:\\Users\\13144\\Desktop\\Computer-VisionandAudio-Lab\\lab3\HTK-RealTimeRecordedVoice")
 os.system("hcopy -A -D -T 1 -C tr_wav.cfg -S .\list.scp")
 os.chdir("C:\\Users\\13144\\Desktop\\Computer-VisionandAudio-Lab\\lab3")
