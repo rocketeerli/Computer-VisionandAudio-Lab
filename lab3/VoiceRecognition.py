@@ -4,6 +4,8 @@ import os
 import numpy as np
 from struct import unpack
 import pyaudio
+from endpointDetection import EndPointDetect
+
 
 # 存储成 wav 文件的参数
 framerate = 16000  # 采样频率 8000 or 16000
@@ -21,7 +23,7 @@ def getMFCC() :
     for i in range(10) :
         MFCC_rows = []
         for j in range(5) :
-            f = open("./EndPointedVoice-MFCC/" + str(i + 1) + "-" + str(j + 1) + ".mfc","rb")
+            f = open("./MFCC-EndPointedVoice/" + str(i + 1) + "-" + str(j + 1) + ".mfc","rb")
             nframes = unpack(">i", f.read(4))[0]
             frate = unpack(">i", f.read(4))[0]     # 100 ns 内的
             nbytes = unpack(">h", f.read(2))[0]    # 特征的字节数
@@ -102,6 +104,24 @@ def save_wave_file(filename, data):
     wf.writeframes(b"".join(data))
     wf.close()
 
+def getMFCCRecorded() :
+    f = open("./MFCC-RealTimeRecordedVoice/recordedVoice.mfc", "rb")
+    nframes = unpack(">i", f.read(4))[0]
+    frate = unpack(">i", f.read(4))[0]     # 100 ns 内的
+    nbytes = unpack(">h", f.read(2))[0]    # 特征的字节数
+    feakind = unpack(">h", f.read(2))[0]
+    # print("nframes : " + str(nframes) + "\n" + "frate : " + str(frate) + "\n" + \
+    #         "nbytes : " + str(nbytes) + "\n" + "feakind : " + str(feakind))
+    ndim = nbytes / 4   # 维数
+    feature = []
+    for m in range(nframes) :
+        feature_frame = []
+        for n in range(int(ndim)) :
+            feature_frame.append(unpack(">f", f.read(4))[0])
+        feature.append(feature_frame)
+    f.close()
+    return feature
+
 # 存储所有语音文件的 MFCC 特征
 # 读取已经用 HTK 计算好的 MFCC 特征
 MFCC = getMFCC()
@@ -138,5 +158,37 @@ for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
     
 print("录音结束,请停止说话!!!")
 
-# 存储语音文件
-save_wave_file("./RealTimeRecordedVoice/recordedVoice.wav", frames)
+# 存储刚录制的语音文件
+save_wave_file("./RecordedVoice-RealTime/recordedVoice_before.wav", frames)
+
+# 对刚录制的语音进行端点检测
+f = wave.open("./RecordedVoice-RealTime/recordedVoice_before.wav", "rb")
+params = f.getparams()
+nchannels, sampwidth, framerate, nframes = params[:4]
+str_data = f.readframes(nframes) 
+wave_data = np.fromstring(str_data, dtype = np.short)
+f.close()
+end_point_detect = EndPointDetect(wave_data)
+
+# 存储端点检测后的语音文件
+N = end_point_detect.wave_data_detected
+m = 0
+while m < len(N) :
+    save_wave_file("./RecordedVoice-RealTime/recordedVoice_after.wav", wave_data[N[m] * 256 : N[m+1] * 256])
+    m = m + 2
+os.chdir("C:\\Users\\13144\\Desktop\\Computer-VisionandAudio-Lab\\lab3\HTK-RealTimeRecordedVoice")
+os.system("hcopy -A -D -T 1 -C tr_wav.cfg -S .\list.scp")
+os.chdir("C:\\Users\\13144\\Desktop\\Computer-VisionandAudio-Lab\\lab3")
+
+# 对录好的语音进行匹配
+MFCC_recorded = getMFCCRecorded()
+
+# 进行匹配
+flag = 0
+min_dis = dtw(MFCC_recorded, MFCC_models[0])
+for j in range(1, len(MFCC_models)) :
+    dis = dtw(MFCC_recorded, MFCC_models[j])
+    if dis < min_dis :
+        min_dis = dis
+        flag = j
+print( "\t" + str(flag + 1) + "\n")
