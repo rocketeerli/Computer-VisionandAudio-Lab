@@ -3,10 +3,17 @@ import wave
 import os
 import numpy as np
 from struct import unpack
+import pyaudio
 
+# 存储成 wav 文件的参数
 framerate = 16000  # 采样频率 8000 or 16000
 channels = 1       # 声道数
 sampwidth = 2      # 采样字节 1 or 2
+
+# 实时录音的参数
+CHUNK = 1024       # 录音的块大小
+RATE = 16000       # 采样频率 8000 or 16000
+RECORD_SECONDS = 5 # 录音时长 单位 秒(s)
 
 # 读取已经用 HTK 计算好的 MFCC 特征
 def getMFCC() :
@@ -86,7 +93,7 @@ def distance(x1, x2) :
     return sum
 
 # 将语音文件存储成 wav 格式
-def save_wave_file(filename,data):
+def save_wave_file(filename, data):
     '''save the date to the wavfile'''
     wf = wave.open(filename,'wb')
     wf.setnchannels(channels)   # 声道
@@ -115,3 +122,21 @@ for i in range(len(MFCC_undetermined)) :
             min_dis = dis
             flag = j
     print(str(i + 1) + "\t" + str(flag + 1) + "\n")
+
+# 录音
+pa = pyaudio.PyAudio()
+stream = pa.open(format = pyaudio.paInt16, channels = 1, \
+                   rate = framerate ,    input = True, \
+                   frames_per_buffer = CHUNK)
+print("开始录音,请说话......")
+
+frames = []
+
+for i in range(0, int(RATE / CHUNK * RECORD_SECONDS)):
+    data = stream.read(CHUNK)
+    frames.append(data)
+    
+print("录音结束,请停止说话!!!")
+
+# 存储语音文件
+save_wave_file("./RealTimeRecordedVoice/recordedVoice.wav", frames)
