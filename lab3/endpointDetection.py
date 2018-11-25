@@ -3,6 +3,11 @@ import wave
 import os
 import numpy as np
 
+# 存储成 wav 文件的参数
+framerate = 16000  # 采样频率 8000 or 16000
+channels = 1       # 声道数
+sampwidth = 2      # 采样字节 1 or 2
+
 def sgn(data):
     if data >= 0 :
         return 1
@@ -110,9 +115,19 @@ def endPointDetect(wave_data, energy, zeroCrossingRate) :
     print("过零率阈值，最终语音分段C:" + str(C))
     return C
 
+# 将语音文件存储成 wav 格式
+def save_wave_file(filename,data):
+    '''save the date to the wavfile'''
+    wf = wave.open(filename,'wb')
+    wf.setnchannels(channels)   # 声道
+    wf.setsampwidth(sampwidth)  # 采样字节 1 or 2
+    wf.setframerate(framerate)  # 采样频率 8000 or 16000
+    wf.writeframes(b"".join(data))
+    wf.close()
+
 for i in range(10) :
     for j in range(5) :
-        f = wave.open("./录制的语音命令/" + str(i + 1) + "-" + str(j + 1) + ".wav","rb")
+        f = wave.open("./RecordedVoice/" + str(i + 1) + "-" + str(j + 1) + ".wav","rb")
         # getparams() 一次性返回所有的WAV文件的格式信息
         params = f.getparams()
         # nframes 采样点数目
@@ -129,10 +144,9 @@ for i in range(10) :
         energy = calEnergy(wave_data)
         zeroCrossingRate = calZeroCrossingRate(wave_data)
         N = endPointDetect(wave_data, energy, zeroCrossingRate)
-        # 输出为 pcm 格式
-        with open("./端点检测后的语音命令/" + str(i + 1) + "-" + str(j + 1) + ".pcm", "wb") as f :
-            m = 0
-            while m < len(N) :
-                for num in wave_data[N[m] * 256 : N[m+1] * 256] :
-                    f.write(num)
-                m = m + 2
+        # 输出为 wav 格式
+        m = 0
+        while m < len(N) :
+            save_wave_file("./EndPointedVoice/" + str(i + 1) + "-" + str(j + 1) + ".wav", wave_data[N[m] * 256 : N[m+1] * 256])
+            m = m + 2
+        

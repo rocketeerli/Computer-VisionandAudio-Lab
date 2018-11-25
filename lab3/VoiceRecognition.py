@@ -4,13 +4,17 @@ import os
 import numpy as np
 from struct import unpack
 
+framerate = 16000  # 采样频率 8000 or 16000
+channels = 1       # 声道数
+sampwidth = 2      # 采样字节 1 or 2
+
 # 读取已经用 HTK 计算好的 MFCC 特征
 def getMFCC() :
     MFCC = []
     for i in range(10) :
         MFCC_rows = []
         for j in range(5) :
-            f = open("./RecordedVoice-MFCC/" + str(i + 1) + "-" + str(j + 1) + ".mfc","rb")
+            f = open("./EndPointedVoice-MFCC/" + str(i + 1) + "-" + str(j + 1) + ".mfc","rb")
             nframes = unpack(">i", f.read(4))[0]
             frate = unpack(">i", f.read(4))[0]     # 100 ns 内的
             nbytes = unpack(">h", f.read(2))[0]    # 特征的字节数
@@ -81,6 +85,16 @@ def distance(x1, x2) :
         sum = sum + abs(x1[i] - x2[i])
     return sum
 
+# 将语音文件存储成 wav 格式
+def save_wave_file(filename,data):
+    '''save the date to the wavfile'''
+    wf = wave.open(filename,'wb')
+    wf.setnchannels(channels)   # 声道
+    wf.setsampwidth(sampwidth)  # 采样字节 1 or 2
+    wf.setframerate(framerate)  # 采样频率 8000 or 16000
+    wf.writeframes(b"".join(data))
+    wf.close()
+
 # 存储所有语音文件的 MFCC 特征
 # 读取已经用 HTK 计算好的 MFCC 特征
 MFCC = getMFCC()
@@ -100,4 +114,4 @@ for i in range(len(MFCC_undetermined)) :
         if dis < min_dis :
             min_dis = dis
             flag = j
-    print(str(i + 1) + "\t" + str(flag + 1) + "\n") 
+    print(str(i + 1) + "\t" + str(flag + 1) + "\n")
