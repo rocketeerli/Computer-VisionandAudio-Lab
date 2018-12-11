@@ -1,14 +1,10 @@
 # -*- coding: UTF-8 -*-
 import numpy as np
 import cv2
-import copy
 
 # 调整图像的亮度
 def imageAdjustmentLightness(img) :
-    B, G, R = cv2.split(img)
-    b = copy.deepcopy(B)
-    g = copy.deepcopy(G)
-    r = copy.deepcopy(R)
+    b, g, r = cv2.split(img)
     for row in range(len(b)) :
         for col in range(len(b[row])) :
             if b[row][col] > 235 :
@@ -29,10 +25,7 @@ def imageAdjustmentLightness(img) :
 
 # 调整图像的对比度
 def imageAdjustmentContrast(img) :
-    B, G, R = cv2.split(img)
-    b = copy.deepcopy(B)
-    g = copy.deepcopy(G)
-    r = copy.deepcopy(R)
+    b, g, r = cv2.split(img)
     for row in range(len(b)) :
         for col in range(len(b[row])) :
             if b[row][col] > 231 :
