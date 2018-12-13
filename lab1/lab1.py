@@ -27,9 +27,8 @@ def calZeroCrossingRate(wave_data) :
     zeroCrossingRate = []
     sum = 0
     for i in range(len(wave_data)) :
-        if i == 0:
-            None
-        #elif int(wave_data[i] - T) * int(wave_data[i - 1] - T) <= 0 or int(wave_data[i] + T) * int(wave_data[i - 1] + T) <= 0 :
+        if i % 256 == 0:
+            continue
         sum = sum + np.abs(sgn(wave_data[i]) - sgn(wave_data[i - 1]))
         if (i + 1) % 256 == 0 :
             zeroCrossingRate.append(float(sum) / 255)
