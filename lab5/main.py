@@ -5,14 +5,12 @@ import imageAdjust
 import matplotlib.pyplot as plt
 import imageHistogram
 import ordinaryFilter
-
-# 计算二维矩阵的中值
-def calMedianValue(matrix) :
-    return np.median(matrix)
+import copy
+import operatorRobertsandSobel
 
 # 读取图片信息
-img = cv2.imread("02.jpg")
-cv2.imshow("original", img)
+img = cv2.imread("xunmeng.bmp")
+# cv2.imshow("original", img)
 # # 颜色空间转换 BGR -> HLS
 # hls = cv2.cvtColor(img, cv2.COLOR_BGR2HLS)
 # cv2.imshow("HLS",hls)  
@@ -35,10 +33,24 @@ cv2.imshow("original", img)
 
 # 第三部分 实现图像的空域滤波：中值滤波和均值滤波
 # 中值滤波
-img_median = ordinaryFilter.medianFiltering(img)
-cv2.imshow("median filtering", img_median)
-# 均值滤波
-img_mean = ordinaryFilter.meanFiltering(img)
-cv2.imshow("mean filtering", img_mean)
+# img_median = ordinaryFilter.medianFiltering(img)
+# cv2.imshow("median filtering", img_median)
+# # 均值滤波
+# img_mean = ordinaryFilter.meanFiltering(img)
+# cv2.imshow("mean filtering", img_mean)
+
+# 第四部分 实现图像的边缘检测：Roberts 算子和 Sobel 算子。
+# Roberts 算子
+B, G, R = operatorRobertsandSobel.calRoberts(img)
+cv2.imshow("Blue Roberts", B)
+cv2.imshow("Green Roberts", G)
+cv2.imshow("Red Roberts", R)
+cv2.imshow("BGR Roberts", cv2.merge([B, G, R]))
+# Sobel 算子
+B, G, R = operatorRobertsandSobel.calSobel(img)
+cv2.imshow("Blue Sobel", B)
+cv2.imshow("Green Sobel", G)
+cv2.imshow("Red Sobel", R)
+cv2.imshow("BGR Sobel", cv2.merge([B, G, R]))
 
 cv2.waitKey(0)
