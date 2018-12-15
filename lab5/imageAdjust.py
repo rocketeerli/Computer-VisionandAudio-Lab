@@ -31,15 +31,15 @@ def imageAdjustmentContrast(img) :
             if b[row][col] > 231 :
                 b[row][col] = 255
             else :
-                b[row][col] = np.int8(b[row][col] * 1.1)
+                b[row][col] = np.uint8(b[row][col] * 1.1)
             if g[row][col] > 231 :
                 g[row][col] = 255
             else :
-                g[row][col] = np.int8(g[row][col] * 1.1)
+                g[row][col] = np.uint8(g[row][col] * 1.1)
             if r[row][col] > 231 :
                 r[row][col] = 255
             else :
-                r[row][col] = np.int8(r[row][col] * 1.1)
+                r[row][col] = np.uint8(r[row][col] * 1.1)
     merged = cv2.merge([b, g, r])
     cv2.imshow("after adjust contrast", merged)
     cv2.imwrite("imgeAdjustment-Contrast.png", merged)

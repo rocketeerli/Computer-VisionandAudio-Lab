@@ -16,13 +16,13 @@ def drawHistogram(img) :
     plt.ylabel("pixel number")
     plt.title("Histogram of Blue Channel")
     plt.hist(b, bins=256, label = "blue", density=1, facecolor='green', edgecolor='b', alpha=0.75)
-    plt.show()
+    # plt.show()
     # 绿色通道的直方图
     plt.xlabel("chroma")
     plt.ylabel("pixel number")
     plt.title("Histogram of Green Channel")
     plt.hist(g, bins=256, label = "green", density=1, facecolor='green', edgecolor='g', alpha=0.75)
-    plt.show()
+    # plt.show()
     # 红色通道的直方图
     # plt.cla()  # 可以清空上面存留的信息，防止直方图叠加
     plt.style.use( 'ggplot')
